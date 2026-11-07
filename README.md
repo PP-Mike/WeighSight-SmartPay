@@ -91,12 +91,21 @@ pip3 install onnxruntime        # 或使用系统预装的进迭时空优化版
 
 ### 2. 获取模型
 
-```markdown
 模型 `best6.onnx`（20.8 MB）未纳入版本库，请从 Releases 下载：
+
+**方式一：浏览器**
+
+打开 https://github.com/PP-Mike/WeighSight-SmartPay/releases/latest ，下载 `best6.onnx`，放入程序同级的 `model/` 目录。
+
+**方式二：命令行**
 
 ```bash
 mkdir -p model
-wget -O model/best6.onnx https://github.com/PP-Mike/WeighSight-SmartPay/releases/latest/download/best6.onnx
+wget -O model/best6.onnx \
+  https://github.com/PP-Mike/WeighSight-SmartPay/releases/latest/download/best6.onnx
+```
+
+> 模型路径由程序内的 `MODEL_PATH = './model/best6.onnx'` 决定，需与运行目录保持一致。
 
 ### 3. 初始化商品库
 
