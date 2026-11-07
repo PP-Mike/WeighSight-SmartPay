@@ -1,5 +1,0 @@
-﻿# 建议用系统包安装：sudo apt install -y python3-pyqt5 python3-opencv python3-numpy python3-serial
-onnxruntime>=1.16
-numpy>=1.21
-opencv-python-headless>=4.5
-pyserial>=3.5
