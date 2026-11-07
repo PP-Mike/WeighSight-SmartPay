@@ -308,7 +308,7 @@ class InferenceThread(QThread):
         self.max_queue_size = 1
         # 多帧平滑：对最近若干帧的概率取平均，抑制单帧抖动
         self.prob_history = []
-        self.history_len = 10   # 抓拍后累积 10 帧再投票
+        self.history_len = 3    # 只保留最近 3 帧概率，压低等待时间
 
     def init_session(self):
         if ONNX_AVAILABLE and os.path.exists(self.model_path):
@@ -504,8 +504,9 @@ class CameraThread(QThread):
         self._last_top1 = None
         self._stable_count = 0
         self._frames_since_capture = 0
-        self._max_wait_frames = 10
+        self._max_wait_frames = 4
         self._settled = False
+        self._fast_mode = False   # 抓拍后进入快速模式：每个新帧都送推理
 
     def init_inference(self):
         if ONNX_AVAILABLE and os.path.exists(MODEL_PATH):
@@ -536,10 +537,11 @@ class CameraThread(QThread):
             self._stable_count = 1
 
         if not self._settled:
-            # 累积至少 8 帧再投票，比逐帧一致判定更抗摇摆
-            if (self._frames_since_capture >= 8
-                    or (self._stable_count >= 5 and confidence >= 0.6)):
+            # 快速结算：连续 2 帧一致即出结果，最多等 3 帧
+            if ((self._stable_count >= 2 and confidence >= 0.5)
+                    or self._frames_since_capture >= 3):
                 self._settled = True
+                self._fast_mode = False
                 self.recog_settled.emit()
 
     def get_current_frame(self):
@@ -582,7 +584,9 @@ class CameraThread(QThread):
                     self.current_frame = frame.copy()
                     self.mutex.unlock()
 
-                    if self.inference_thread and self.frame_count % INFERENCE_INTERVAL == 0:
+                    if self.inference_thread and (
+                            self._fast_mode
+                            or self.frame_count % INFERENCE_INTERVAL == 0):
                         self.inference_thread.add_frame(frame)
 
                     self.frame_count += 1
@@ -639,6 +643,7 @@ class CameraThread(QThread):
                             self._stable_count = 0
                             self._last_top1 = None
                             self._settled = False
+                            self._fast_mode = True   # 抓拍后每个新帧都送推理
                             # 清空多帧历史：从抓拍这一刻重新累积，排除空盘画面
                             if getattr(self, 'inference_thread', None) is not None:
                                 self.inference_thread.reset_history()
