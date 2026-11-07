@@ -91,12 +91,12 @@ pip3 install onnxruntime        # 或使用系统预装的进迭时空优化版
 
 ### 2. 获取模型
 
-模型 `best6.onnx`（20.8 MB）体积较大，请从 [Releases](../../releases) 下载后放入 `model/` 目录：
+```markdown
+模型 `best6.onnx`（20.8 MB）未纳入版本库，请从 Releases 下载：
 
 ```bash
 mkdir -p model
-# 将 best6.onnx 放入 model/
-```
+wget -O model/best6.onnx https://github.com/PP-Mike/WeighSight-SmartPay/releases/latest/download/best6.onnx
 
 ### 3. 初始化商品库
 
